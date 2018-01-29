@@ -6,7 +6,7 @@
 /*   By: geargenc <geargenc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 15:38:03 by geargenc          #+#    #+#             */
-/*   Updated: 2018/01/29 18:06:21 by jhache           ###   ########.fr       */
+/*   Updated: 2018/01/29 21:59:57 by geargenc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,139 +117,99 @@ void	ft_draw_segment(int x1, int y1, int x2, int y2, t_clrpick *clrpick)
 	}
 }
 
-int				mlx_color_bar(void *mlx_ptr, t_clrpick *clrpick)
+void			img_draw_line(t_img *img, int y, int color)
 {
-	int			stage_len;
+	int			x;
+
+	x = 0;
+	while (x < img->x_size)
+	{
+		img_pixel_put(img, x, y, color);
+		x++;
+	}
+}
+
+void			ft_draw_bar(t_clrpick *clrpick)
+{
 	int			i;
-	int			j;
 	int			k;
 	t_color		color;
 
-	clrpick->bar.x_size = WIN_WIDTH / 15;
-	clrpick->bar.y_size = WIN_HEIGHT;
-	clrpick->bar.ptr = mlx_new_image(mlx_ptr, clrpick->bar.x_size, clrpick->bar.y_size);
-	clrpick->bar.data = mlx_get_data_addr(clrpick->bar.ptr, &(clrpick->bar.bpp),
-										&(clrpick->bar.sl), &(clrpick->bar.endian));
-	stage_len = WIN_HEIGHT / 6;
 	k = 3;
 	color.color = 0;
 	while (--k >= 0)
 	{
 		color.byte[k] = 0xFF;
 		i = -1;
-		while (++i <= stage_len)
+		while (++i <= (WIN_HEIGHT / 6))
 		{
-			color.byte[(k - 1 + 3) % 3] = 255000 / stage_len * i / 1000;
-			j = -1;
-			while (++j < WIN_WIDTH / 15)
-				img_pixel_put(&(clrpick->bar), j, i + ((2 - k) * stage_len * 2), color.color);
+			color.byte[(k - 1 + 3) % 3] = 255000 / (WIN_HEIGHT / 6) * i / 1000;
+			img_draw_line(&(clrpick->bar), i + ((2 - k) * (WIN_HEIGHT / 6) * 2),
+				color.color);
 		}
 		color.byte[(k - 1 + 3) % 3] = 0xFF;
 		while (--i > 0)
 		{
-			color.byte[k] = 255000 / stage_len * i / 1000;
-			j = -1;
-			while (++j < WIN_WIDTH / 15)
-				img_pixel_put(&(clrpick->bar), j, (stage_len - i) + ((2 - k) * stage_len * 2) + stage_len, color.color);
+			color.byte[k] = 255000 / (WIN_HEIGHT / 6) * i / 1000;
+			img_draw_line(&(clrpick->bar), ((WIN_HEIGHT / 6) - i) + ((2 - k) *
+				(WIN_HEIGHT / 6) * 2) + (WIN_HEIGHT / 6), color.color);
 		}
 		color.byte[k] = 0x00;
 	}
-	return (0);
 }
 
-int				mlx_color_bar_cursor(void *mlx_ptr, t_clrpick *clrpick)//ARROW CURSOR
+int				ft_color_bar(t_clrpick *clrpick)
 {
-	int	x;
-	int	y;
-
-	clrpick->bar_cursor.x_size = clrpick->bar.x_size / 2;
-	clrpick->bar_cursor.y_size = (WIN_HEIGHT / 20) + 1;
-	clrpick->bar_cursor.ptr = mlx_new_image(mlx_ptr, clrpick->bar_cursor.x_size,
-											clrpick->bar_cursor.y_size);
-	clrpick->bar_cursor.data =
-		mlx_get_data_addr(clrpick->bar_cursor.ptr, &(clrpick->bar_cursor.bpp),
-						&(clrpick->bar_cursor.sl), &(clrpick->bar_cursor.endian));
-	clrpick->color.color = GREY;
-	y = 0;
-	while (y < clrpick->bar_cursor.y_size)
-	{
-		x = 0;
-		while (x < clrpick->bar_cursor.x_size)
-			img_pixel_put(&(clrpick->bar_cursor), x++, y, 0xFF000000);
-		++y;
-	}
-/*	//	***** CURSEUR LATERAL, A DROITE *****
-	x = 0;
-	y = clrpick->bar_cursor.y_size / 2;
-	while (x < 3)// (x_size - ?) pour compenser l'incrementation de x
-	{
-		ft_draw_segment(x, y, x + (clrpick->bar_cursor.x_size - 3), y + (clrpick->bar_cursor.y_size / 2), clrpick);
-		ft_draw_segment(x, y, x + (clrpick->bar_cursor.x_size - 3), y - (clrpick->bar_cursor.y_size / 2), clrpick);
-		++x;
-	}*/
-	//	***** CURSEUR LATERAL, A GAUCHE *****
-	x = 0;
-	y = clrpick->bar_cursor.y_size / 2;
-	while (x < 3)//	(x_size - ?) pour compenser l'incrementation de x.
-//					on peut remplacer la valeur fixe (?) par une proportion de la taille de la fenetre (WIN_WIDTH / 200 par exemple)
-	{
-		ft_draw_segment(x + (clrpick->bar_cursor.x_size - 3), y, x, y + (clrpick->bar_cursor.y_size / 2), clrpick);
-		ft_draw_segment(x + (clrpick->bar_cursor.x_size - 3), y, x, y - (clrpick->bar_cursor.y_size / 2), clrpick);
-		++x;
-	}
+	clrpick->bar.x_size = WIN_WIDTH / 15;
+	clrpick->bar.y_size = WIN_HEIGHT / 6 * 6;
+	clrpick->bar.x = WIN_WIDTH / 15 * 1;
+	clrpick->bar.y = 0;
+	if (!(clrpick->bar.ptr = mlx_new_image(clrpick->mlx_ptr,
+		clrpick->bar.x_size, clrpick->bar.y_size)) ||
+		!(clrpick->bar.data = mlx_get_data_addr(clrpick->bar.ptr,
+		&(clrpick->bar.bpp), &(clrpick->bar.sl), &(clrpick->bar.endian))))
+		return (1);
+	ft_draw_bar(clrpick);
 	return (0);
 }
 
-int				m222lx_color_bar_cursor(void *mlx_ptr, t_clrpick *clrpick)//FLAT CURSOR
+int				mlx_color_bar_cursor(void *mlx_ptr, t_clrpick *clrpick)
 {
 	int	i;
 	int	j;
 
 	i = 0;
-	clrpick->bar_cursor.x_size = WIN_WIDTH / 15;
-	clrpick->bar_cursor.y_size = 3;
+	clrpick->bar_cursor.x_size = clrpick->bar.x_size + 4;
+	clrpick->bar_cursor.y_size = 7;
+	clrpick->bar_cursor.x = clrpick->bar.x - ((clrpick->bar_cursor.x_size - clrpick->bar.x_size) / 2);
+	clrpick->bar_cursor.y = 0;
 	clrpick->bar_cursor.ptr = mlx_new_image(mlx_ptr, clrpick->bar_cursor.x_size,
 											clrpick->bar_cursor.y_size);
 	clrpick->bar_cursor.data =
 		mlx_get_data_addr(clrpick->bar_cursor.ptr, &(clrpick->bar_cursor.bpp),
 						&(clrpick->bar_cursor.sl), &(clrpick->bar_cursor.endian));
-	clrpick->color.color = GREY;
-//	***** CURSEUR PLEIN *****
-	while (i < clrpick->bar_cursor.y_size)
+	j = -1;
+	while (++j < clrpick->bar_cursor.y_size)
 	{
-		j = 0;
-		while (j < clrpick->bar_cursor.x_size)
-			img_pixel_put(&(clrpick->bar_cursor), j++, i, GREY);
-		++i;
+		i = -1;
+		if (j < 2 || j >= clrpick->bar_cursor.y_size - 2)
+			while (++i < clrpick->bar_cursor.x_size)
+				img_pixel_put(&(clrpick->bar_cursor), i, j, GREY);
+		else
+			while (++i < clrpick->bar_cursor.x_size)
+				img_pixel_put(&(clrpick->bar_cursor), i, j, ((i < 2 || i >= clrpick->bar_cursor.x_size - 2) ? GREY : 0xFF000000));
 	}
-//	***** CURSEUR VIDE ******
-/*	while (i < clrpick->bar_cursor.y_size)
-	{
-		j = 0;
-		img_pixel_put(&(clrpick->bar_cursor), 0, i, GREY);
-		img_pixel_put(&(clrpick->bar_cursor),
-					clrpick->bar_cursor.x_size - 1, i, GREY);
-		while (j < clrpick->bar_cursor.x_size)
-		{
-			if (i == 0 || i == clrpick->bar_cursor.y_size - 1)
-				img_pixel_put(&(clrpick->bar_cursor), j++, i, GREY);
-			else
-				img_pixel_put(&(clrpick->bar_cursor), j++, i, 0xFF000000);
-		}
-			++i;
-	}*/
 	return (0);
 }
 
 int				mlx_color_sqr(void *mlx_ptr, t_clrpick *clrpick, t_color color)
 {
-	int		tmp;
 	int		k;
 	int		x;
 	int		y;
 	t_color	pxl_clr;
 
-	clrpick->sqr.x_size = WIN_WIDTH / 5 * 4;
+	clrpick->sqr.x_size = WIN_WIDTH / 3 * 2;
 	clrpick->sqr.y_size = WIN_HEIGHT;
 	clrpick->sqr.ptr = mlx_new_image(mlx_ptr, clrpick->sqr.x_size, clrpick->sqr.y_size);
 	clrpick->sqr.data = mlx_get_data_addr(clrpick->sqr.ptr, &(clrpick->sqr.bpp),
@@ -263,14 +223,8 @@ int				mlx_color_sqr(void *mlx_ptr, t_clrpick *clrpick, t_color color)
 			k = -1;
 			while (++k < 3)
 			{
-				tmp = color.byte[k] * 1000;
-				if (color.byte[k] != 255)
-					tmp += (x * 1000) / (clrpick->sqr.x_size / (255 - color.byte[k]));
-				if (color.byte[k] != 0)
-				tmp -= (y * 1000) / (clrpick->sqr.y_size / color.byte[k]);
-//				tmp /= (1000 - ((y * 1000) / clrpick->sqr.y_size));
-//				tmp /= ((((y == 0) ? 1 : y) * 1000) / clrpick->sqr.y_size);
-				pxl_clr.byte[k] = tmp / 1000;
+				pxl_clr.byte[k] = color.byte[k] + ((255 - color.byte[k]) * 1000 / clrpick->sqr.x_size) * x / 1000;
+				pxl_clr.byte[k] = pxl_clr.byte[k] - (pxl_clr.byte[k] * 1000 / clrpick->sqr.y_size) * y / 1000;
 			}
 			pxl_clr.byte[3] = 0;
 			img_pixel_put(&(clrpick->sqr), x, y, pxl_clr.color);
@@ -281,35 +235,59 @@ int				mlx_color_sqr(void *mlx_ptr, t_clrpick *clrpick, t_color color)
 	return (0);
 }
 
+t_color			img_get_color(t_img *img, int x, int y)
+{
+	t_color		*color;
+
+	color = (t_color *)img->data;
+	if (x >= 0 && x < img->x_size && y >= 0 && y < img->y_size)
+		return (color[y * img->x_size + x]);
+	return ((t_color)0);
+}
+
+int				ft_isinimage(t_img *img, int x, int y)
+{
+	return (x >= img->x && x < img->x + img->x_size &&
+		y >= img->y && y < img->y + img->y_size);
+}
+
+int				clrpick_click_event(int button, int x, int y, void *params)
+{
+	t_clrpick	*clrpick;
+
+	clrpick = params;
+	printf("%d %d\n", x, y);
+	if (x >= clrpick->bar.x && x < clrpick->bar.x + clrpick->bar.x_size &&
+		y >= clrpick->bar.y && y < clrpick->bar.y + clrpick->bar.y_size)
+	{
+		clrpick->bar_cursor.y = y - clrpick->bar_cursor.y_size / 2;
+		mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr,
+			clrpick->bar_cursor.ptr, clrpick->bar_cursor.x,
+			clrpick->bar_cursor.y);
+		mlx_color_sqr(clrpick->mlx_ptr, clrpick, img_get_color(&(clrpick->bar), 0, y));
+		mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr, clrpick->sqr.ptr, SQR_POSX, SQR_POSY);
+	}
+	return (0);
+}
+
 void			*mlx_color_picker(void *mlx_ptr, int (*f)(int, void *),
 				void *params)
 {
 	t_clrpick	*clrpick;
-	t_color		color_test;
 
-	color_test.color = 0xFF0000;
 	(void)f;
 	(void)params;
-	if (!(clrpick = (t_clrpick *)malloc(sizeof(t_clrpick))) ||
-		mlx_color_bar(mlx_ptr, clrpick) ||
-		mlx_color_sqr(mlx_ptr, clrpick, color_test) ||
+	if (!(clrpick = (t_clrpick *)malloc(sizeof(t_clrpick))))
+		return (NULL);
+	clrpick->mlx_ptr = mlx_ptr;
+	if (ft_color_bar(clrpick) ||
 		mlx_color_bar_cursor(mlx_ptr, clrpick))// ||
 //		mlx_color_sqr_cursor(mlx_ptr, clrpick))
 		return (NULL);
 	clrpick->win_ptr = mlx_new_window(mlx_ptr, WIN_WIDTH, WIN_HEIGHT, "test");
-//	********** BAR **********
-//	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->bar.ptr, BAR_POSX, BAR_POSY);//FLAT CURSOR, RIGHT CURSOR
-	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->bar.ptr, BAR_POSX + WIN_WIDTH / 15, BAR_POSY);//LEFT CURSOR
-//	********** BAR_CURSOR **********
-	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->bar_cursor.ptr,
-							BAR_POSX + WIN_WIDTH / 15 - (clrpick->bar_cursor.x_size), BAR_POSY + 30);//LEFT CURSOR
-//	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->bar_cursor.ptr,
-//							BAR_POSX + WIN_WIDTH / 15, BAR_POSY + 30);//RIGHT CURSOR
-//	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->bar_cursor.ptr,
-//							BAR_POSX, BAR_POSY + 30);//FLAT CURSOR
-//	********** SQUARE **********
-	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->sqr.ptr, SQR_POSX, SQR_POSY);
+	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->bar.ptr, clrpick->bar.x, clrpick->bar.y);
 	clrpick->button = none;
+	mlx_mouse_hook(clrpick->win_ptr, &clrpick_click_event, clrpick);
 	mlx_loop(mlx_ptr);
 	return (clrpick);
 }
