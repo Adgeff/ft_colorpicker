@@ -6,7 +6,7 @@
 /*   By: geargenc <geargenc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 15:38:03 by geargenc          #+#    #+#             */
-/*   Updated: 2018/01/30 12:39:37 by geargenc         ###   ########.fr       */
+/*   Updated: 2018/01/30 15:13:13 by geargenc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ typedef struct	s_clrpick
 	t_img		sqr;
 	t_img		bar_cursor;
 	t_img		sqr_cursor;
+	int			(*f)(int, void *);
+	void		*param;
 	t_click		click;
 }				t_clrpick;
 
@@ -270,21 +272,21 @@ void			ft_draw_window(t_clrpick *clrpick)
 	mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr, clrpick->bar_cursor.ptr, clrpick->bar_cursor.x, clrpick->bar_cursor.y);
 }
 
-int				ft_clrpick_release_event(int button, int x, int y, void *params)
+int				ft_clrpick_release_event(int button, int x, int y, void *param)
 {
 	t_clrpick	*clrpick;
 
-	clrpick = params;
+	clrpick = param;
 	if (button == clrpick->click.button)
 		clrpick->click.button = 0;
 	return (0);
 }
 
-int				ft_clrpick_motion_event(int x, int y, void *params)
+int				ft_clrpick_motion_event(int x, int y, void *param)
 {
 	t_clrpick	*clrpick;
 
-	clrpick = params;
+	clrpick = param;
 	if (clrpick->click.button == 1)
 	{
 		if (ft_isinimage(&(clrpick->bar), clrpick->click.x, clrpick->click.y))
@@ -303,17 +305,17 @@ int				ft_clrpick_motion_event(int x, int y, void *params)
 	return (0);
 }
 
-int				ft_clrpick_click_event(int button, int x, int y, void *params)
+int				ft_clrpick_click_event(int button, int x, int y, void *param)
 {
 	t_clrpick	*clrpick;
 
-	clrpick = params;
+	clrpick = param;
 	if (clrpick->click.button == 0)
 	{
 		clrpick->click.button = button;
 		clrpick->click.x = x;
 		clrpick->click.y = y;
-		ft_clrpick_motion_event(x, y, params);
+		ft_clrpick_motion_event(x, y, param);
 	}
 	return (0);
 }
@@ -331,7 +333,7 @@ void			ft_bzero(void *ptr, size_t len)
 }
 
 void			*mlx_color_picker(void *mlx_ptr, int (*f)(int, void *),
-				void *params)
+				void *param)
 {
 	t_clrpick	*clrpick;
 
@@ -341,6 +343,8 @@ void			*mlx_color_picker(void *mlx_ptr, int (*f)(int, void *),
 		return (NULL);
 	ft_bzero(clrpick, sizeof(t_clrpick));
 	clrpick->mlx_ptr = mlx_ptr;
+	clrpick->f = f;
+	clrpick->param = param;
 	if (ft_bar(clrpick) ||
 		ft_bar_cursor(mlx_ptr, clrpick) ||
 		ft_sqr(clrpick, img_get_color(&(clrpick->bar), 0, clrpick->bar_cursor.y + (clrpick->bar_cursor.y_size / 2))))
