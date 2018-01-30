@@ -6,7 +6,7 @@
 /*   By: geargenc <geargenc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 15:38:03 by geargenc          #+#    #+#             */
-/*   Updated: 2018/01/29 21:59:57 by geargenc         ###   ########.fr       */
+/*   Updated: 2018/01/30 12:39:37 by geargenc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,15 +48,12 @@ typedef struct	s_img
 	int			y;
 }				t_img;
 
-typedef enum	e_button
+typedef struct	s_click
 {
-	none = 0,
-	left = 1,
-	right = 2,
-	wheel = 4,
-	down = 8,
-	up = 16
-}				t_button;
+	int			button;
+	int			x;
+	int			y;
+}				t_click;
 
 typedef union		u_color
 {
@@ -72,8 +69,7 @@ typedef struct	s_clrpick
 	t_img		sqr;
 	t_img		bar_cursor;
 	t_img		sqr_cursor;
-	t_button	button;
-	t_color		color;
+	t_click		click;
 }				t_clrpick;
 
 void		img_pixel_put(t_img *img, int x, int y, int color)
@@ -90,7 +86,7 @@ void		img_pixel_put(t_img *img, int x, int y, int color)
 		printf("Depassement image\n");
 }
 
-void	ft_draw_segment(int x1, int y1, int x2, int y2, t_clrpick *clrpick)
+/*void	ft_draw_segment(int x1, int y1, int x2, int y2, t_clrpick *clrpick)
 {
 	t_bresenham	err;
 
@@ -115,7 +111,7 @@ void	ft_draw_segment(int x1, int y1, int x2, int y2, t_clrpick *clrpick)
 			err.xe += ABS(err.dx);
 		}
 	}
-}
+}*/
 
 void			img_draw_line(t_img *img, int y, int color)
 {
@@ -158,7 +154,7 @@ void			ft_draw_bar(t_clrpick *clrpick)
 	}
 }
 
-int				ft_color_bar(t_clrpick *clrpick)
+int				ft_bar(t_clrpick *clrpick)
 {
 	clrpick->bar.x_size = WIN_WIDTH / 15;
 	clrpick->bar.y_size = WIN_HEIGHT / 6 * 6;
@@ -173,7 +169,7 @@ int				ft_color_bar(t_clrpick *clrpick)
 	return (0);
 }
 
-int				mlx_color_bar_cursor(void *mlx_ptr, t_clrpick *clrpick)
+int				ft_bar_cursor(void *mlx_ptr, t_clrpick *clrpick)
 {
 	int	i;
 	int	j;
@@ -182,7 +178,7 @@ int				mlx_color_bar_cursor(void *mlx_ptr, t_clrpick *clrpick)
 	clrpick->bar_cursor.x_size = clrpick->bar.x_size + 4;
 	clrpick->bar_cursor.y_size = 7;
 	clrpick->bar_cursor.x = clrpick->bar.x - ((clrpick->bar_cursor.x_size - clrpick->bar.x_size) / 2);
-	clrpick->bar_cursor.y = 0;
+	clrpick->bar_cursor.y = -(clrpick->bar.y_size / 2);
 	clrpick->bar_cursor.ptr = mlx_new_image(mlx_ptr, clrpick->bar_cursor.x_size,
 											clrpick->bar_cursor.y_size);
 	clrpick->bar_cursor.data =
@@ -202,18 +198,13 @@ int				mlx_color_bar_cursor(void *mlx_ptr, t_clrpick *clrpick)
 	return (0);
 }
 
-int				mlx_color_sqr(void *mlx_ptr, t_clrpick *clrpick, t_color color)
+int				ft_draw_sqr(t_clrpick *clrpick, t_color color)
 {
 	int		k;
 	int		x;
 	int		y;
 	t_color	pxl_clr;
 
-	clrpick->sqr.x_size = WIN_WIDTH / 3 * 2;
-	clrpick->sqr.y_size = WIN_HEIGHT;
-	clrpick->sqr.ptr = mlx_new_image(mlx_ptr, clrpick->sqr.x_size, clrpick->sqr.y_size);
-	clrpick->sqr.data = mlx_get_data_addr(clrpick->sqr.ptr, &(clrpick->sqr.bpp),
-										&(clrpick->sqr.sl), &(clrpick->sqr.endian));
 	y = 0;
 	while (y < clrpick->sqr.y_size)
 	{
@@ -223,8 +214,10 @@ int				mlx_color_sqr(void *mlx_ptr, t_clrpick *clrpick, t_color color)
 			k = -1;
 			while (++k < 3)
 			{
-				pxl_clr.byte[k] = color.byte[k] + ((255 - color.byte[k]) * 1000 / clrpick->sqr.x_size) * x / 1000;
-				pxl_clr.byte[k] = pxl_clr.byte[k] - (pxl_clr.byte[k] * 1000 / clrpick->sqr.y_size) * y / 1000;
+				pxl_clr.byte[k] = color.byte[k] + ((255 - color.byte[k]) * 1000
+					/ clrpick->sqr.x_size) * x / 1000;
+				pxl_clr.byte[k] = pxl_clr.byte[k] - (pxl_clr.byte[k] * 1000 /
+					clrpick->sqr.y_size) * y / 1000;
 			}
 			pxl_clr.byte[3] = 0;
 			img_pixel_put(&(clrpick->sqr), x, y, pxl_clr.color);
@@ -232,6 +225,24 @@ int				mlx_color_sqr(void *mlx_ptr, t_clrpick *clrpick, t_color color)
 		}
 		++y;
 	}
+	return (0);
+}
+
+int				ft_sqr(t_clrpick *clrpick, t_color color)
+{
+	if (!(clrpick->sqr.ptr))
+	{
+		clrpick->sqr.x_size = WIN_WIDTH / 3 * 2;
+		clrpick->sqr.y_size = WIN_HEIGHT;
+		clrpick->sqr.x = WIN_WIDTH / 5;
+		clrpick->sqr.y = 0;
+		if (!(clrpick->sqr.ptr = mlx_new_image(clrpick->mlx_ptr,
+			clrpick->sqr.x_size, clrpick->sqr.y_size)) ||
+			!(clrpick->sqr.data = mlx_get_data_addr(clrpick->sqr.ptr,
+			&(clrpick->sqr.bpp), &(clrpick->sqr.sl), &(clrpick->sqr.endian))))
+			return (1);
+	}
+	ft_draw_sqr(clrpick, (t_color)color);
 	return (0);
 }
 
@@ -251,23 +262,72 @@ int				ft_isinimage(t_img *img, int x, int y)
 		y >= img->y && y < img->y + img->y_size);
 }
 
-int				clrpick_click_event(int button, int x, int y, void *params)
+void			ft_draw_window(t_clrpick *clrpick)
+{
+	mlx_clear_window(clrpick->mlx_ptr, clrpick->win_ptr);
+	mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr, clrpick->bar.ptr, clrpick->bar.x, clrpick->bar.y);
+	mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr, clrpick->sqr.ptr, clrpick->sqr.x, clrpick->sqr.y);
+	mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr, clrpick->bar_cursor.ptr, clrpick->bar_cursor.x, clrpick->bar_cursor.y);
+}
+
+int				ft_clrpick_release_event(int button, int x, int y, void *params)
 {
 	t_clrpick	*clrpick;
 
 	clrpick = params;
-	printf("%d %d\n", x, y);
-	if (x >= clrpick->bar.x && x < clrpick->bar.x + clrpick->bar.x_size &&
-		y >= clrpick->bar.y && y < clrpick->bar.y + clrpick->bar.y_size)
+	if (button == clrpick->click.button)
+		clrpick->click.button = 0;
+	return (0);
+}
+
+int				ft_clrpick_motion_event(int x, int y, void *params)
+{
+	t_clrpick	*clrpick;
+
+	clrpick = params;
+	if (clrpick->click.button == 1)
 	{
-		clrpick->bar_cursor.y = y - clrpick->bar_cursor.y_size / 2;
-		mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr,
-			clrpick->bar_cursor.ptr, clrpick->bar_cursor.x,
-			clrpick->bar_cursor.y);
-		mlx_color_sqr(clrpick->mlx_ptr, clrpick, img_get_color(&(clrpick->bar), 0, y));
-		mlx_put_image_to_window(clrpick->mlx_ptr, clrpick->win_ptr, clrpick->sqr.ptr, SQR_POSX, SQR_POSY);
+		if (ft_isinimage(&(clrpick->bar), clrpick->click.x, clrpick->click.y))
+		{
+			if (y < clrpick->bar.y)
+				clrpick->bar_cursor.y = clrpick->bar.y;
+			else if (y >= clrpick->bar.y + clrpick->bar.y_size)
+				clrpick->bar_cursor.y = clrpick->bar.y + clrpick->bar.y_size - 1;
+			else
+				clrpick->bar_cursor.y = y;
+			ft_draw_sqr(clrpick, (t_color)img_get_color(&(clrpick->bar), 0, clrpick->bar_cursor.y));
+			clrpick->bar_cursor.y -= clrpick->bar_cursor.y_size / 2;
+			ft_draw_window(clrpick);
+		}
 	}
 	return (0);
+}
+
+int				ft_clrpick_click_event(int button, int x, int y, void *params)
+{
+	t_clrpick	*clrpick;
+
+	clrpick = params;
+	if (clrpick->click.button == 0)
+	{
+		clrpick->click.button = button;
+		clrpick->click.x = x;
+		clrpick->click.y = y;
+		ft_clrpick_motion_event(x, y, params);
+	}
+	return (0);
+}
+
+void			ft_bzero(void *ptr, size_t len)
+{
+	size_t		i;
+
+	i = 0;
+	while (i < len)
+	{
+		((unsigned char *)ptr)[i] = 0;
+		i++;
+	}
 }
 
 void			*mlx_color_picker(void *mlx_ptr, int (*f)(int, void *),
@@ -279,15 +339,18 @@ void			*mlx_color_picker(void *mlx_ptr, int (*f)(int, void *),
 	(void)params;
 	if (!(clrpick = (t_clrpick *)malloc(sizeof(t_clrpick))))
 		return (NULL);
+	ft_bzero(clrpick, sizeof(t_clrpick));
 	clrpick->mlx_ptr = mlx_ptr;
-	if (ft_color_bar(clrpick) ||
-		mlx_color_bar_cursor(mlx_ptr, clrpick))// ||
+	if (ft_bar(clrpick) ||
+		ft_bar_cursor(mlx_ptr, clrpick) ||
+		ft_sqr(clrpick, img_get_color(&(clrpick->bar), 0, clrpick->bar_cursor.y + (clrpick->bar_cursor.y_size / 2))))
 //		mlx_color_sqr_cursor(mlx_ptr, clrpick))
 		return (NULL);
 	clrpick->win_ptr = mlx_new_window(mlx_ptr, WIN_WIDTH, WIN_HEIGHT, "test");
 	mlx_put_image_to_window(mlx_ptr, clrpick->win_ptr, clrpick->bar.ptr, clrpick->bar.x, clrpick->bar.y);
-	clrpick->button = none;
-	mlx_mouse_hook(clrpick->win_ptr, &clrpick_click_event, clrpick);
+	mlx_mouse_hook(clrpick->win_ptr, &ft_clrpick_click_event, clrpick);
+	mlx_hook(clrpick->win_ptr, MotionNotify, PointerMotionMask, &ft_clrpick_motion_event, clrpick);
+	mlx_hook(clrpick->win_ptr, ButtonRelease, ButtonReleaseMask, &ft_clrpick_release_event, clrpick);
 	mlx_loop(mlx_ptr);
 	return (clrpick);
 }
