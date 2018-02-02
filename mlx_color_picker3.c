@@ -6,7 +6,7 @@
 /*   By: geargenc <geargenc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 15:38:03 by geargenc          #+#    #+#             */
-/*   Updated: 2018/01/30 18:03:01 by geargenc         ###   ########.fr       */
+/*   Updated: 2018/02/02 12:56:30 by geargenc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void			img_draw_line(t_img *img, int y, int color)
 	}
 }
 
-void			ft_draw_bar(t_clrpick *clrpick)
+/*void			ft_draw_bar(t_clrpick *clrpick)
 {
 	int			i;
 	int			k;
@@ -108,6 +108,65 @@ void			ft_draw_bar(t_clrpick *clrpick)
 				(WIN_HEIGHT / 6) * 2) + (WIN_HEIGHT / 6), color.color);
 		}
 		color.byte[k] = 0x00;
+	}
+}*/
+
+int				ft_bar_red(int where, int size)
+{
+	where = (where % size + size) % size;
+	if (where < size / 6 * 1)
+		return (255);
+	if (where < size / 6 * 2)
+		return ((-255000 / (size / 6)) * (where % (size / 6)) / 1000 + 255);
+	if (where < size / 6 * 4)
+		return (0);
+	if (where < size / 6 * 5)
+		return ((255000 / (size / 6)) * (where % (size / 6)) / 1000);
+	return (255);
+}
+
+int				ft_bar_green(int where, int size)
+{
+	where = (where % size + size) % size;
+	if (where < size / 6 * 1)
+		return ((255000 / (size / 6)) * (where % (size / 6)) / 1000);
+	if (where < size / 6 * 3)
+		return (255);
+	if (where < size / 6 * 4)
+		return ((-255000 / (size / 6)) * (where % (size / 6)) / 1000 + 255);
+	return (0);
+}
+
+int				ft_bar_blue(int where, int size)
+{
+	where = (where % size + size) % size;
+	if (where < size / 6 * 2)
+		return (0);
+	if (where < size / 6 * 3)
+		return ((255000 / (size / 6)) * (where % (size / 6)) / 1000);
+	if (where < size / 6 * 5)
+		return (255);
+	return ((-255000 / (size / 6)) * (where % (size / 6)) / 1000 + 255);
+}
+
+void			ft_draw_bar(t_clrpick *clrpick)
+{
+	int			i;
+	int			j;
+
+	j = 0;
+	while (j < clrpick->bar.y_size)
+	{
+		i = 0;
+		while (i < clrpick->bar.x_size)
+		{
+			img_pixel_put(&(clrpick->bar), i, j,
+				((ft_bar_red(j, clrpick->bar.y_size) << 16) |
+				(ft_bar_green(j, clrpick->bar.y_size) << 8) |
+				(ft_bar_blue(j, clrpick->bar.y_size) << 0)) & 0x00FFFFFF);
+			i++;
+		}
+		j++;
 	}
 }
 
