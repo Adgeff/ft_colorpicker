@@ -6,7 +6,7 @@
 /*   By: geargenc <geargenc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/06 16:25:58 by geargenc          #+#    #+#             */
-/*   Updated: 2018/02/06 16:38:29 by geargenc         ###   ########.fr       */
+/*   Updated: 2018/02/08 12:56:40 by jhache           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ int				ft_clrpick_release_event(int button, int x, int y, void *param)
 	clrpick = param;
 	if (button == clrpick->click.button)
 		clrpick->click.button = 0;
+	x = 0;
+	y = 0;
 	return (0);
 }
 
@@ -37,7 +39,7 @@ int				ft_clrpick_click_event(int button, int x, int y, void *param)
 	return (0);
 }
 
-static void		ft_clrpick_motion_bar(int x, int y, t_clrpick *clrpick)
+static void		ft_clrpick_motion_bar(int y, t_clrpick *clrpick)
 {
 	if (y < clrpick->bar.y)
 		y = clrpick->bar.y;
@@ -78,7 +80,7 @@ int				ft_clrpick_motion_event(int x, int y, void *param)
 	if (clrpick->click.button == 1)
 	{
 		if (ft_isinimage(&(clrpick->bar), clrpick->click.x, clrpick->click.y))
-			ft_clrpick_motion_bar(x, y, clrpick);
+			ft_clrpick_motion_bar(y, clrpick);
 		if (ft_isinimage(&(clrpick->sqr), clrpick->click.x, clrpick->click.y))
 			ft_clrpick_motion_sqr(x, y, clrpick);
 	}
