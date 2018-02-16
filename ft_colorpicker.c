@@ -6,7 +6,7 @@
 /*   By: geargenc <geargenc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 15:38:03 by geargenc          #+#    #+#             */
-/*   Updated: 2018/02/06 16:39:20 by geargenc         ###   ########.fr       */
+/*   Updated: 2018/02/16 23:22:47 by geargenc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,4 +76,20 @@ void			ft_close_colorpicker(void *clrpick_ptr)
 	mlx_destroy_image(clrpick->mlx_ptr, clrpick->sqr_cursor.ptr);
 	mlx_destroy_window(clrpick->mlx_ptr, clrpick->win_ptr);
 	free(clrpick);
+}
+
+void			ft_reset_colorpicker(void *clrpick_ptr)
+{
+	t_clrpick	*clrpick;
+	t_color		color;
+
+	clrpick = clrpick_ptr;
+	clrpick->bar_cursor.x = clrpick->bar.x - ((clrpick->bar_cursor.x_size -
+		clrpick->bar.x_size) / 2);
+	clrpick->bar_cursor.y = -(clrpick->bar_cursor.y_size / 2);
+	clrpick->sqr_cursor.x = clrpick->sqr.x - clrpick->sqr_cursor.x_size / 2;
+	clrpick->sqr_cursor.y = clrpick->sqr.y - clrpick->sqr_cursor.y_size / 2;
+	color.color = 0xFF0000;
+	ft_draw_sqr(clrpick, color);
+	ft_draw_window(clrpick);
 }
