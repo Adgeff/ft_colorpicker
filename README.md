@@ -9,6 +9,8 @@ void  *ft_colorpicker(void *mlx_ptr, int (*f)(int, void *), void *param, char *n
 
 void  ft_close_colorpicker(void *clrpick_ptr);
 
+void  ft_reset_colorpicker(void *clrpick_ptr);
+
 # General informations :
 
 The function ft_colorpicker will open a new window which contains the color_picker interface.
@@ -37,14 +39,18 @@ void * is a parameter you can give in the third parameter of the ft_colorpicker 
  - void *param : a parameter to give to your function you send in second parameter.
  - char *name : the name of the window created.
 
-The ft_close_colorpicker functions destoy windows, images and free memory used by a color_picker call. The
+The ft_close_colorpicker function destoys window, images and free memory used by an ft_colorpicker call. The
 function needs 1 parameter :
+ - void *clrpick_ptr : The return value of the ft_colorpicker function.
+ 
+The ft_reset_colorpicker function resets the color picker window, as a new one. It doesn't call the f function
+pointer ! The function needs 1 parameter :
  - void *clrpick_ptr : The return value of the ft_colorpicker function.
 
 # Return Values :
 The ft_colorpicker function returns a void * pointer. You can use it to call the ft_close_colorpicker
 function.
-The ft_close_colorpicker function does not return anything.
+The ft_close_colorpicker and ft_reset_colorpicker functions do not return anything.
 
 # Here is the list of headers includes in ft_clrpick.h :
 
